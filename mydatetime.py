@@ -10,25 +10,28 @@ def get_strtype(string):
      - 2000-00-00T00:00:00+00:00
     """
     pattern1=re.compile(r'^\d{4}-\d{2}-\d{2}$')
-    if pattern1.fullmatch(string): return 1
+    if pattern1.fullmatch(string):
+        return 1
     pattern2=re.compile(r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$')
-    if pattern2.fullmatch(string): return 2
+    if pattern2.fullmatch(string):
+        return 2
     pattern3=re.compile(r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$')
-    if pattern3.fullmatch(string): return 3
+    if pattern3.fullmatch(string):
+        return 3
     raise Exception
 
 
 
-def get_today(type=None,country=None):
-    if type=='datetime' or type is None:
+def get_today(format_=None,country=None):
+    if format_=='datetime' or format_ is None:
         if not country:
             return datetime.date.today()
         elif country.lower() == 'japan':
             return datetime.datetime.now(tz=pytz.timezone('Asia/Tokyo')).date()
 
-    elif type=='str':
+    elif format_=='str':
         return str(get_today('datetime',country))
-    elif type=='pd':
+    elif format_=='pd':
         return pd.Timestamp(get_today('str',country)) # It does not contain tz info but date might be different, so country is necessary arg. 
     raise TypeError
 
@@ -77,10 +80,12 @@ def str_topd(string):
         return pd.Timestamp(str_todatetime(string))
     raise Exception
 
-def to_japantz(string):
+def to_japantz(string,format_=None):
     type_=get_strtype(string)
     if type_==3:
         utc_time=str_todatetime(string)
-        return utc_time.astimezone(pytz.timezone("Asia/Tokyo"))
+        if format_ is None or format_ == 'datetime':
+            return utc_time.astimezone(pytz.timezone("Asia/Tokyo"))
+        elif format_=='str':
+            return str(utc_time.astimezone(pytz.timezone("Asia/Tokyo")))
     raise Exception
-
